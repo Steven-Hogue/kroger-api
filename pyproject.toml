@@ -7,7 +7,7 @@ name = "kroger-api"
 version = "0.1.0"
 description = "A simple ORM Python wrapper for the Kroger API"
 readme = "README.md"
-license = "MIT"
+license = "Apache-2.0"
 authors = [
     {name = "Steven Hogue", email = "steven.d.hogue@gmail.com"},
 ]
