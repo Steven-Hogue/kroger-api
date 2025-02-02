@@ -1,0 +1,44 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "kroger-api"
+version = "0.1.0"
+description = "A simple ORM Python wrapper for the Kroger API"
+readme = "README.md"
+license = "MIT"
+authors = [
+    {name = "Steven Hogue", email = "steven.d.hogue@gmail.com"},
+]
+
+requires-python = ">=3.11"
+dependencies = [
+    "dataclass-wizard>=0.35.0",
+    "hatchling>=1.27.0",
+    "pre-commit>=4.1.0",
+    "requests>=2.32.3",
+    "ruff>=0.9.4",
+]
+
+[tool.ruff]
+line-length = 88
+indent-width = 4
+
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+]
