@@ -2,11 +2,12 @@
 
 from dataclasses import dataclass
 
-from dataclass_wizard import JSONWizard, TimePattern, path_field
+from clientforge.models import BaseModel
+from dataclass_wizard import TimePattern, path_field
 
 
 @dataclass
-class AisleLocation(JSONWizard):
+class AisleLocation(BaseModel):
     bay_number: int
     description: str
     number: int
@@ -18,7 +19,7 @@ class AisleLocation(JSONWizard):
 
 
 @dataclass
-class Fulfillment(JSONWizard):
+class Fulfillment(BaseModel):
     curbside: bool = False
     delivery: bool = False
     instore: bool = False
@@ -26,7 +27,7 @@ class Fulfillment(JSONWizard):
 
 
 @dataclass
-class Price(JSONWizard):
+class Price(BaseModel):
     regular: float
     promo: float
     regularPerUnitEstimate: float
@@ -34,7 +35,7 @@ class Price(JSONWizard):
 
 
 @dataclass
-class Item(JSONWizard):
+class Item(BaseModel):
     item_id: str
     favorite: bool
     fulfillment: Fulfillment
@@ -47,19 +48,19 @@ class Item(JSONWizard):
 
 
 @dataclass
-class Sizes(JSONWizard):
+class Sizes(BaseModel):
     size: str
     url: str
 
 
 @dataclass
-class Image(JSONWizard):
+class Image(BaseModel):
     perspective: str
     sizes: list[Sizes]
 
 
 @dataclass
-class Product(JSONWizard):
+class Product(BaseModel):
     product_id: str
     product_page_uri: str
     aisle_locations: list[AisleLocation]
@@ -79,14 +80,14 @@ class Product(JSONWizard):
 
 
 @dataclass
-class DayHours(JSONWizard):
+class DayHours(BaseModel):
     open: TimePattern["%H:%M"]  # noqa: F722
     close: TimePattern["%H:%M"]  # noqa: F722
     open24: bool
 
 
 @dataclass
-class Hours(JSONWizard):
+class Hours(BaseModel):
     Open24: bool
     monday: DayHours
     tuesday: DayHours
@@ -101,13 +102,13 @@ class Hours(JSONWizard):
 
 
 @dataclass
-class Geolocation(JSONWizard):
+class Geolocation(BaseModel):
     latitude: float
     longitude: float
 
 
 @dataclass
-class Department(JSONWizard):
+class Department(BaseModel):
     departmentId: str
     name: str
 
@@ -116,7 +117,7 @@ class Department(JSONWizard):
 
 
 @dataclass
-class Address(JSONWizard):
+class Address(BaseModel):
     addressLine1: str
     city: str
     county: str
@@ -127,7 +128,7 @@ class Address(JSONWizard):
 
 
 @dataclass
-class Location(JSONWizard):
+class Location(BaseModel):
     name: str
     division_number: int
     store_number: int

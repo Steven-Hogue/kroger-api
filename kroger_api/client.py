@@ -1,18 +1,16 @@
 """Kroger API client."""
 
 import logging
-import time
 from collections.abc import Generator
 
-from dataclass_wizard import JSONWizard
-from requests import Request, Session
+from clientforge import BaseModel, ClientCredentialsOAuth2Auth, ForgeClient
 
 from kroger_api.models import Location, Product
 
 logger = logging.getLogger(__name__)
 
 
-class KrogerClient:
+class KrogerClient(ForgeClient):
     """Kroger API client.
 
     Notes
@@ -36,50 +34,28 @@ class KrogerClient:
             scopes (list, optional): List of scopes. Defaults to None.
             limit (int, optional): Number of results to return. Defaults to 10.
         """
-        self.api_url = "https://api.kroger.com/v1/{endpoint}"
-
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.scopes = scopes or []
-        self.limit = limit
-        self._oauth_token_data = None
-
-        self.session = Session()
-        self.session.headers.update(
-            {
-                "Authorization": f"Bearer {self._oauth_token}",
+        super().__init__(
+            api_url="https://api.kroger.com/v1/{endpoint}",
+            auth=ClientCredentialsOAuth2Auth(
+                "https://api.kroger.com/v1/connect/oauth2/token",
+                client_id=client_id,
+                client_secret=client_secret,
+                scopes=scopes,
+            ),
+            headers={
                 "Accept": "application/json",
                 "Content-Type": "application/json",
                 "User-Agent": "Kroger API Client",
-            }
+            },
         )
+
+        self.limit = limit
 
         if self.limit <= 0 or self.limit > 50:
             raise ValueError("Limit must be between 1 and 50")
 
         if not scopes:
             logger.warning("No scopes provided!")
-
-    def _make_request(
-        self, method: str, endpoint: str, params: dict = None, **kwargs
-    ) -> dict:
-        """Make a request to the Kroger API."""
-        params = params or {}
-
-        prepped_request = self.session.prepare_request(
-            Request(
-                method,
-                self.api_url.format(endpoint=endpoint),
-                params=params,
-                **kwargs,
-            )
-        )
-        logger.debug(f"Sending request to: {prepped_request.url}")
-
-        response = self.session.send(prepped_request)
-        response.raise_for_status()
-
-        return response.json()
 
     def _paginate_request(
         self,
@@ -108,11 +84,11 @@ class KrogerClient:
         self,
         method: str,
         endpoint: str,
-        model: JSONWizard,
+        model: BaseModel,
         params: dict = None,
         number_of_results: int = 10,
         **kwargs,
-    ) -> list[dict]:
+    ) -> list[BaseModel]:
         """Make a request and return a list of model objects."""
         generator = self._paginate_request(method, endpoint, params=params, **kwargs)
 
@@ -191,8 +167,8 @@ class KrogerClient:
         -----
             https://developer.kroger.com/api-products/api/product-api-public
         """
-        return Product.from_dict(
-            self._make_request("GET", f"products/{product_id}")["data"]
+        return self._make_request("GET", f"products/{product_id}").to_model(
+            Product, key="data"
         )
 
     def search_locations(
@@ -266,36 +242,6 @@ class KrogerClient:
         -----
             https://developer.kroger.com/api-products/api/location-api-public
         """
-        return Location.from_dict(
-            self._make_request("GET", f"locations/{location_id}")["data"]
+        return self._make_request("GET", f"locations/{location_id}").to_model(
+            Location, key="data"
         )
-
-    @property
-    def _oauth_token(self) -> str:
-        if not self._oauth_token_data:
-            self._fetch_oauth_token_data()
-        return self._oauth_token_data["access_token"]
-
-    def _fetch_oauth_token_data(self) -> None:
-        if (
-            not self._oauth_token_data
-            or (time.time() - self._oauth_token_data["acquired_at"])
-            > self._oauth_token_data["expires_in"]
-        ):
-            token_res = self.session.post(
-                self.api_url.format(endpoint="connect/oauth2/token"),
-                headers={
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                auth=(self.client_id, self.client_secret),
-                data={
-                    "grant_type": "client_credentials",
-                    "scope": " ".join(self.scopes),
-                },
-            )
-            token_res.raise_for_status()
-
-            self._oauth_token_data = token_res.json()
-
-            if not self._oauth_token_data.get("acquired_at"):
-                self._oauth_token_data["acquired_at"] = time.time()
