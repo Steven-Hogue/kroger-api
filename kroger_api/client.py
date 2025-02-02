@@ -1,3 +1,5 @@
+"""Kroger API client."""
+
 import logging
 import time
 from collections.abc import Generator
@@ -11,6 +13,13 @@ logger = logging.getLogger(__name__)
 
 
 class KrogerClient:
+    """Kroger API client.
+
+    Notes
+    -----
+        https://developer.kroger.com
+    """
+
     def __init__(
         self,
         client_id: str,
@@ -20,13 +29,12 @@ class KrogerClient:
     ):
         """Kroger API client.
 
-        Args:
+        Parameters
+        ----------
             client_id (str): Client ID.
             client_secret (str): Client secret.
             scopes (list, optional): List of scopes. Defaults to None.
             limit (int, optional): Number of results to return. Defaults to 10.
-
-        Docs: https://developer.kroger.com
         """
         self.api_url = "https://api.kroger.com/v1/{endpoint}"
 
@@ -127,7 +135,8 @@ class KrogerClient:
     ) -> list[Product]:
         """Search for products based on the provided search terms.
 
-        Args:
+        Parameters
+        ----------
             terms (list[str], optional): Search terms. Defaults to None.
             brand (str, optional): Brand name. Defaults to None.
             fulfillment (str, optional): Fulfillment type. Defaults to None.
@@ -136,13 +145,16 @@ class KrogerClient:
             number_of_results (int, optional): Number of results to return.
                 Defaults to 10.
 
-        Returns:
+        Returns
+        -------
             list[Product]: List of Product objects.
 
         Scopes:
             - product.compact
 
-        Docs: https://developer.kroger.com/api-products/api/product-api-public
+        Notes
+        -----
+            https://developer.kroger.com/api-products/api/product-api-public
         """
         if len(terms) > 8:
             raise ValueError("Number of search terms must be less than or equal to 8")
@@ -168,13 +180,16 @@ class KrogerClient:
         Args:
             product_id (str): Product ID.
 
-        Returns:
+        Returns
+        -------
             Product: Product object.
 
         Scopes:
             - product.compact
 
-        Docs: https://developer.kroger.com/api-products/api/product-api-public
+        Notes
+        -----
+            https://developer.kroger.com/api-products/api/product-api-public
         """
         return Product.from_dict(
             self._make_request("GET", f"products/{product_id}")["data"]
@@ -190,11 +205,12 @@ class KrogerClient:
         location_ids: list[str] = None,
         number_of_results: int = 10,
     ) -> list[Location]:
-        """Get a list of locations based on the provided search criteria.
+        """Search for locations based on the provided search criteria.
 
         Requires either zip_code or lat_long to be provided, but not both.
 
-        Args:
+        Parameters
+        ----------
             zip_code (str, optional): Search near zip code. Defaults to None.
             lat_long (tuple[float, float], optional): Search near latitude and
                 longitude. Defaults to None.
@@ -208,12 +224,14 @@ class KrogerClient:
             number_of_results (int, optional): Number of results to return.
                 Defaults to 10.
 
-        Returns:
+        Returns
+        -------
             list[Location]: List of Location objects.
 
-        Docs: https://developer.kroger.com/api-products/api/location-api-public
+        Notes
+        -----
+            https://developer.kroger.com/api-products/api/location-api-public
         """
-
         if (zip_code and lat_long) or not (zip_code or lat_long):
             raise ValueError("Provide either zip_code or lat_long, not both or neither")
 
@@ -236,13 +254,17 @@ class KrogerClient:
     def get_location(self, location_id: str) -> Location:
         """Get a location by its ID.
 
-        Args:
+        Parameters
+        ----------
             location_id (str): Location ID.
 
-        Returns:
+        Returns
+        -------
             Location: Location object.
 
-        Docs: https://developer.kroger.com/api-products/api/location-api-public
+        Notes
+        -----
+            https://developer.kroger.com/api-products/api/location-api-public
         """
         return Location.from_dict(
             self._make_request("GET", f"locations/{location_id}")["data"]

@@ -1,3 +1,5 @@
+"""Models for Kroger API."""
+
 from dataclasses import dataclass
 
 from dataclass_wizard import JSONWizard, TimePattern, path_field
