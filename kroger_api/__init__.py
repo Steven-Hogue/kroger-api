@@ -1,3 +1,3 @@
 __all__ = ["KrogerClient"]
 
-from client import KrogerClient
+from kroger_api.client import KrogerClient

@@ -3,8 +3,9 @@ import time
 from collections.abc import Generator
 
 from dataclass_wizard import JSONWizard
-from models import Location, Product
 from requests import Request, Session
+
+from kroger_api.models import Location, Product
 
 logger = logging.getLogger(__name__)
 
