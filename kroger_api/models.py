@@ -2,12 +2,12 @@
 
 from dataclasses import dataclass
 
-from clientforge.models import BaseModel
+from clientforge import ForgeModel
 from dataclass_wizard import TimePattern, path_field
 
 
 @dataclass
-class AisleLocation(BaseModel):
+class AisleLocation(ForgeModel):
     bay_number: int
     description: str
     number: int
@@ -19,7 +19,7 @@ class AisleLocation(BaseModel):
 
 
 @dataclass
-class Fulfillment(BaseModel):
+class Fulfillment(ForgeModel):
     curbside: bool = False
     delivery: bool = False
     instore: bool = False
@@ -27,7 +27,7 @@ class Fulfillment(BaseModel):
 
 
 @dataclass
-class Price(BaseModel):
+class Price(ForgeModel):
     regular: float
     promo: float
     regularPerUnitEstimate: float
@@ -35,7 +35,7 @@ class Price(BaseModel):
 
 
 @dataclass
-class Item(BaseModel):
+class Item(ForgeModel):
     item_id: str
     favorite: bool
     fulfillment: Fulfillment
@@ -48,19 +48,19 @@ class Item(BaseModel):
 
 
 @dataclass
-class Sizes(BaseModel):
+class Sizes(ForgeModel):
     size: str
     url: str
 
 
 @dataclass
-class Image(BaseModel):
+class Image(ForgeModel):
     perspective: str
     sizes: list[Sizes]
 
 
 @dataclass
-class Product(BaseModel):
+class Product(ForgeModel):
     product_id: str
     product_page_uri: str
     aisle_locations: list[AisleLocation]
@@ -68,10 +68,10 @@ class Product(BaseModel):
     categories: list[str]
     description: str
     items: list[Item]
-    temp_indicator: str = path_field("temperature.indicator")
-    heat_sensitive: bool = path_field("temperature.heatSensitive")
     images: list[Image]
     upc: str
+    temp_indicator: str = path_field("temperature.indicator")
+    heat_sensitive: bool = path_field("temperature.heatSensitive")
 
     country_origin: str | None = None
     depth: float | None = path_field("itemInformation.depth", default=None)
@@ -80,14 +80,14 @@ class Product(BaseModel):
 
 
 @dataclass
-class DayHours(BaseModel):
+class DayHours(ForgeModel):
     open: TimePattern["%H:%M"]  # noqa: F722
     close: TimePattern["%H:%M"]  # noqa: F722
     open24: bool
 
 
 @dataclass
-class Hours(BaseModel):
+class Hours(ForgeModel):
     Open24: bool
     monday: DayHours
     tuesday: DayHours
@@ -102,13 +102,13 @@ class Hours(BaseModel):
 
 
 @dataclass
-class Geolocation(BaseModel):
+class Geolocation(ForgeModel):
     latitude: float
     longitude: float
 
 
 @dataclass
-class Department(BaseModel):
+class Department(ForgeModel):
     departmentId: str
     name: str
 
@@ -117,7 +117,7 @@ class Department(BaseModel):
 
 
 @dataclass
-class Address(BaseModel):
+class Address(ForgeModel):
     addressLine1: str
     city: str
     county: str
@@ -128,7 +128,7 @@ class Address(BaseModel):
 
 
 @dataclass
-class Location(BaseModel):
+class Location(ForgeModel):
     name: str
     division_number: int
     store_number: int

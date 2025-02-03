@@ -1,9 +1,9 @@
 """Kroger API client."""
 
 import logging
-from collections.abc import Generator
 
-from clientforge import BaseModel, ClientCredentialsOAuth2Auth, ForgeClient
+from clientforge import ClientCredentialsOAuth2Auth, ForgeClient, ForgeModel
+from clientforge.paginate import OffsetPaginator
 
 from kroger_api.models import Location, Product
 
@@ -22,7 +22,7 @@ class KrogerClient(ForgeClient):
         self,
         client_id: str,
         client_secret: str,
-        scopes: list = None,
+        scopes: list | None = None,
         limit: int = 10,
     ):
         """Kroger API client.
@@ -42,6 +42,13 @@ class KrogerClient(ForgeClient):
                 client_secret=client_secret,
                 scopes=scopes,
             ),
+            paginator=OffsetPaginator(
+                page_size=10,
+                page_size_param="filter.limit",
+                path_to_data="data",
+                page_offset_param="filter.start",
+                path_to_total="meta.pagination.total",
+            ),
             headers={
                 "Accept": "application/json",
                 "Content-Type": "application/json",
@@ -57,44 +64,22 @@ class KrogerClient(ForgeClient):
         if not scopes:
             logger.warning("No scopes provided!")
 
-    def _paginate_request(
-        self,
-        method: str,
-        endpoint: str,
-        params: dict = None,
-        **kwargs,
-    ) -> Generator[list[dict], None, None]:
-        """Paginate through the results of a request."""
-        params["filter.limit"] = self.limit
-
-        response = self._make_request(method, endpoint, params=params, **kwargs)
-        yield response["data"]
-
-        if response.get("meta"):
-            total_results = len(response["data"])
-            pagination = response["meta"]["pagination"]
-            while total_results < pagination["total"]:
-                params["filter.start"] = total_results
-                response = self._make_request(method, endpoint, params=params, **kwargs)
-
-                yield response["data"]
-                total_results += len(response["data"])
-
     def _model_request(
         self,
         method: str,
         endpoint: str,
-        model: BaseModel,
-        params: dict = None,
+        model: ForgeModel,
+        params: dict | None = None,
         number_of_results: int = 10,
         **kwargs,
-    ) -> list[BaseModel]:
+    ) -> list[ForgeModel]:
         """Make a request and return a list of model objects."""
-        generator = self._paginate_request(method, endpoint, params=params, **kwargs)
+        generator = self._generate_pages(method, endpoint, params=params, **kwargs)
 
         results = []
         for data in generator:
-            results.extend([model.from_dict(item) for item in data])
+            # results.extend([item for item in data])
+            results.extend(data.to_model(model, key="data"))
             if len(results) >= number_of_results:
                 break
 
@@ -102,11 +87,11 @@ class KrogerClient(ForgeClient):
 
     def search_products(
         self,
-        terms: list[str] = None,
-        brand: str = None,
-        fulfillment: str = None,
-        location_id: str = None,
-        product_id: str = None,
+        terms: list[str] | None = None,
+        brand: str | None = None,
+        fulfillment: str | None = None,
+        location_id: str | None = None,
+        product_id: str | None = None,
         number_of_results: int = 10,
     ) -> list[Product]:
         """Search for products based on the provided search terms.
@@ -132,7 +117,7 @@ class KrogerClient(ForgeClient):
         -----
             https://developer.kroger.com/api-products/api/product-api-public
         """
-        if len(terms) > 8:
+        if terms and len(terms) > 8:
             raise ValueError("Number of search terms must be less than or equal to 8")
 
         params = {
@@ -173,12 +158,12 @@ class KrogerClient(ForgeClient):
 
     def search_locations(
         self,
-        zip_code: str = None,
-        lat_long: tuple[float, float] = None,
+        zip_code: str | None = None,
+        lat_long: tuple[float, float] | None = None,
         radius: int = 10,
         chain: str = "Kroger",
-        department: str = None,
-        location_ids: list[str] = None,
+        department: str | None = None,
+        location_ids: list[str] | None = None,
         number_of_results: int = 10,
     ) -> list[Location]:
         """Search for locations based on the provided search criteria.
