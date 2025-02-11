@@ -25,8 +25,8 @@ class Fulfillment(ForgeModel):
 class Price(ForgeModel):
     regular: float
     promo: float
-    regularPerUnitEstimate: float | None = None
-    promoPerUnitEstimate: float | None = None
+    regular_price_per_unit_estimate: float | None = None
+    promo_price_per_unit_estimate: float | None = None
 
 
 class Item(ForgeModel):
@@ -78,14 +78,14 @@ class DayHours(ForgeModel):
 
 class Hours(ForgeModel):
     Open24: bool
-    monday: DayHours
-    tuesday: DayHours
-    wednesday: DayHours
-    thursday: DayHours
-    friday: DayHours
-    saturday: DayHours
-    sunday: DayHours
 
+    monday: DayHours | None = None
+    tuesday: DayHours | None = None
+    wednesday: DayHours | None = None
+    thursday: DayHours | None = None
+    friday: DayHours | None = None
+    saturday: DayHours | None = None
+    sunday: DayHours | None = None
     gmtOffset: str | None = None
     timezone: str | None = None
 
@@ -99,7 +99,7 @@ class Address(ForgeModel):
     addressLine1: str
     city: str
     state: str
-    zipCode: str
+    zip_code: str
 
     county: str | None = None
     addressLine2: str | None = None
@@ -118,12 +118,13 @@ class Department(ForgeModel):
 
 class Location(ForgeModel):
     name: str
-    division_number: int
-    store_number: int
+    division_number: str
+    store_number: str
     location_id: str
     chain: str
-    phone: str
     address: Address
-    departments: list[Department]
     geolocation: Geolocation
     hours: Hours
+
+    phone: str | None = None
+    departments: list[Department] | None = None
