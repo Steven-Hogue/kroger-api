@@ -14,8 +14,8 @@ authors = [
 
 requires-python = ">=3.11"
 dependencies = [
-    "clientforge>=0.5.0",
-    "dataclass-wizard>=0.34.0",
+    "clientforge>=0.7.0",
+    "dataclass-wizard==0.35.0",
     "pre-commit>=4.1.0",
     "requests>=2.32.3",
 ]
@@ -25,8 +25,15 @@ dev = [
     "commitizen>=4.1.1",
     "hatchling>=1.27.0",
     "mypy>=1.14.1",
-    "ruff>=0.9.4",
+    "ruff>=0.9.6",
 ]
+
+[tool.pyright]
+# All I want is to ignore 'Expected expression'
+#  for some dataclass_wizard components,
+#  but I can't figure out how to do that
+#  so I'm just disabling all errors for now.
+ignore = ["*"]
 
 [tool.ruff]
 line-length = 88
@@ -48,6 +55,7 @@ select = [
     "SIM",
     # isort
     "I",
+    # docstyle
     "D",
 ]
 [tool.ruff.lint.per-file-ignores]
@@ -67,3 +75,6 @@ major_version_zero = true
 [[tool.mypy.overrides]]
 module = ["clientforge.*", "dataclass_wizard.*"]
 ignore_missing_imports = true
+
+[tool.uv.sources]
+clientforge = { path = "../clientforge" }

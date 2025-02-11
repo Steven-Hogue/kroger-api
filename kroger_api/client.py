@@ -2,7 +2,8 @@
 
 import logging
 
-from clientforge import ClientCredentialsOAuth2Auth, ForgeClient, ForgeModel
+from clientforge import ClientCredentialsOAuth2Auth, ForgeClient
+from clientforge.models import Result
 from clientforge.paginate import OffsetPaginator
 
 from kroger_api.models import Location, Product
@@ -43,7 +44,7 @@ class KrogerClient(ForgeClient):
                 scopes=scopes,
             ),
             paginator=OffsetPaginator(
-                page_size=10,
+                page_size=limit,
                 page_size_param="filter.limit",
                 path_to_data="data",
                 page_offset_param="filter.start",
@@ -56,34 +57,11 @@ class KrogerClient(ForgeClient):
             },
         )
 
-        self.limit = limit
-
-        if self.limit <= 0 or self.limit > 50:
+        if limit <= 0 or limit > 50:
             raise ValueError("Limit must be between 1 and 50")
 
         if not scopes:
             logger.warning("No scopes provided!")
-
-    def _model_request(
-        self,
-        method: str,
-        endpoint: str,
-        model: ForgeModel,
-        params: dict | None = None,
-        number_of_results: int = 10,
-        **kwargs,
-    ) -> list[ForgeModel]:
-        """Make a request and return a list of model objects."""
-        generator = self._generate_pages(method, endpoint, params=params, **kwargs)
-
-        results = []
-        for data in generator:
-            # results.extend([item for item in data])
-            results.extend(data.to_model(model, key="data"))
-            if len(results) >= number_of_results:
-                break
-
-        return results[:number_of_results]
 
     def search_products(
         self,
@@ -92,8 +70,8 @@ class KrogerClient(ForgeClient):
         fulfillment: str | None = None,
         location_id: str | None = None,
         product_id: str | None = None,
-        number_of_results: int = 10,
-    ) -> list[Product]:
+        top_n: int = 10,
+    ) -> Result[Product]:
         """Search for products based on the provided search terms.
 
         Parameters
@@ -103,12 +81,12 @@ class KrogerClient(ForgeClient):
             fulfillment (str, optional): Fulfillment type. Defaults to None.
             location_id (str, optional): Location ID. Defaults to None.
             product_id (str, optional): Product ID. Defaults to None.
-            number_of_results (int, optional): Number of results to return.
+            top_n (int, optional): Number of results to return.
                 Defaults to 10.
 
         Returns
         -------
-            list[Product]: List of Product objects.
+            Result[Product]: Result object containing list of Product objects.
 
         Scopes:
             - product.compact
@@ -121,7 +99,7 @@ class KrogerClient(ForgeClient):
             raise ValueError("Number of search terms must be less than or equal to 8")
 
         params = {
-            "filter.term": terms,
+            "filter.term": " ".join(terms) if terms else None,
             "filter.brand": brand,
             "filter.fulfillment": fulfillment,
             "filter.locationId": location_id,
@@ -131,11 +109,12 @@ class KrogerClient(ForgeClient):
             "GET",
             "products",
             Product,
+            model_key="data",
             params=params,
-            number_of_results=number_of_results,
+            top_n=top_n,
         )
 
-    def get_product(self, product_id: str) -> Product:
+    def get_product(self, product_id: str) -> Result[Product]:
         """Get a product by its ID.
 
         Args:
@@ -143,7 +122,7 @@ class KrogerClient(ForgeClient):
 
         Returns
         -------
-            Product: Product object.
+            Result[Product]: Result object containing Product object.
 
         Scopes:
             - product.compact
@@ -152,8 +131,11 @@ class KrogerClient(ForgeClient):
         -----
             https://developer.kroger.com/api-products/api/product-api-public
         """
-        return self._make_request("GET", f"products/{product_id}").to_model(
-            Product, key="data"
+        return self._model_request(
+            "GET",
+            f"products/{product_id}",
+            Product,
+            model_key="data",
         )
 
     def search_locations(
@@ -164,8 +146,8 @@ class KrogerClient(ForgeClient):
         chain: str = "Kroger",
         department: str | None = None,
         location_ids: list[str] | None = None,
-        number_of_results: int = 10,
-    ) -> list[Location]:
+        top_n: int = 10,
+    ) -> Result[Location]:
         """Search for locations based on the provided search criteria.
 
         Requires either zip_code or lat_long to be provided, but not both.
@@ -182,12 +164,12 @@ class KrogerClient(ForgeClient):
                 all of the departments provided are returned. Defaults to None.
             location_ids (list[str], optional): Comma-separated list of location IDs.
                 Defaults to None.
-            number_of_results (int, optional): Number of results to return.
+            top_n (int, optional): Number of results to return.
                 Defaults to 10.
 
         Returns
         -------
-            list[Location]: List of Location objects.
+            Result[Location]: Result object containing list of Location objects.
 
         Notes
         -----
@@ -208,11 +190,12 @@ class KrogerClient(ForgeClient):
             "GET",
             "locations",
             Location,
+            model_key="data",
             params=params,
-            number_of_results=number_of_results,
+            top_n=top_n,
         )
 
-    def get_location(self, location_id: str) -> Location:
+    def get_location(self, location_id: str) -> Result[Location]:
         """Get a location by its ID.
 
         Parameters
@@ -221,12 +204,15 @@ class KrogerClient(ForgeClient):
 
         Returns
         -------
-            Location: Location object.
+            Result[Location]: Result object containing Location object.
 
         Notes
         -----
             https://developer.kroger.com/api-products/api/location-api-public
         """
-        return self._make_request("GET", f"locations/{location_id}").to_model(
-            Location, key="data"
+        return self._model_request(
+            "GET",
+            f"locations/{location_id}",
+            Location,
+            model_key="data",
         )

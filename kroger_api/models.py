@@ -1,40 +1,34 @@
 """Models for Kroger API."""
 
-from dataclasses import dataclass
-
 from clientforge import ForgeModel
-from dataclass_wizard import TimePattern, path_field
+from dataclass_wizard.v1 import Alias, AliasPath, TimePattern
 
 
-@dataclass
 class AisleLocation(ForgeModel):
     bay_number: int
     description: str
     number: int
     number_of_facings: int
-    sequence_number: int
     side: str
     shelf_number: int
     shelf_position_in_bay: int
+    sequence_number: int | None = None
 
 
-@dataclass
 class Fulfillment(ForgeModel):
     curbside: bool = False
     delivery: bool = False
-    instore: bool = False
-    shiptohome: bool = False
+    in_store: bool = False
+    ship_to_home: bool = False
 
 
-@dataclass
 class Price(ForgeModel):
     regular: float
     promo: float
-    regularPerUnitEstimate: float
-    promoPerUnitEstimate: float
+    regularPerUnitEstimate: float | None = None
+    promoPerUnitEstimate: float | None = None
 
 
-@dataclass
 class Item(ForgeModel):
     item_id: str
     favorite: bool
@@ -44,25 +38,21 @@ class Item(ForgeModel):
     price: Price | None = None
     national_price: Price | None = None
     sold_by: str | None = None
-    stock_level: str | None = path_field("inventory.stockLevel", default=None)
+    stock_level: str | None = Alias("inventory.stockLevel", default=None)
 
 
-@dataclass
 class Sizes(ForgeModel):
     size: str
     url: str
 
 
-@dataclass
 class Image(ForgeModel):
     perspective: str
     sizes: list[Sizes]
 
 
-@dataclass
 class Product(ForgeModel):
     product_id: str
-    product_page_uri: str
     aisle_locations: list[AisleLocation]
     brand: str
     categories: list[str]
@@ -70,23 +60,22 @@ class Product(ForgeModel):
     items: list[Item]
     images: list[Image]
     upc: str
-    temp_indicator: str = path_field("temperature.indicator")
-    heat_sensitive: bool = path_field("temperature.heatSensitive")
+    product_page_uri: str = Alias("productPageURI")
+    temp_indicator: str = AliasPath("temperature.indicator")
+    heat_sensitive: bool = AliasPath("temperature.heatSensitive")
 
     country_origin: str | None = None
-    depth: float | None = path_field("itemInformation.depth", default=None)
-    height: float | None = path_field("itemInformation.height", default=None)
-    width: float | None = path_field("itemInformation.width", default=None)
+    depth: float | None = AliasPath("itemInformation.depth", default=None)
+    height: float | None = AliasPath("itemInformation.height", default=None)
+    width: float | None = AliasPath("itemInformation.width", default=None)
 
 
-@dataclass
 class DayHours(ForgeModel):
     open: TimePattern["%H:%M"]  # noqa: F722
     close: TimePattern["%H:%M"]  # noqa: F722
     open24: bool
 
 
-@dataclass
 class Hours(ForgeModel):
     Open24: bool
     monday: DayHours
@@ -101,33 +90,32 @@ class Hours(ForgeModel):
     timezone: str | None = None
 
 
-@dataclass
 class Geolocation(ForgeModel):
     latitude: float
     longitude: float
 
 
-@dataclass
+class Address(ForgeModel):
+    addressLine1: str
+    city: str
+    state: str
+    zipCode: str
+
+    county: str | None = None
+    addressLine2: str | None = None
+
+
 class Department(ForgeModel):
     departmentId: str
     name: str
 
     hours: Hours | None = None
     phone: str | None = None
+    address: Address | None = None
+    geolocation: Geolocation | None = None
+    offsite: bool | None = None
 
 
-@dataclass
-class Address(ForgeModel):
-    addressLine1: str
-    city: str
-    county: str
-    state: str
-    zipCode: str
-
-    addressLine2: str | None = None
-
-
-@dataclass
 class Location(ForgeModel):
     name: str
     division_number: int
