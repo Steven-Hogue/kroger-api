@@ -75,6 +75,3 @@ major_version_zero = true
 [[tool.mypy.overrides]]
 module = ["clientforge.*", "dataclass_wizard.*"]
 ignore_missing_imports = true
-
-[tool.uv.sources]
-clientforge = { path = "../clientforge" }

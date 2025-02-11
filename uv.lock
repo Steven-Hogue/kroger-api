@@ -93,7 +93,7 @@ wheels = [
 [[package]]
 name = "clientforge"
 version = "0.7.0"
-source = { directory = "../clientforge" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "dataclass-wizard" },
     { name = "httpx" },
@@ -102,26 +102,9 @@ dependencies = [
     { name = "pre-commit" },
     { name = "types-oauthlib" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "dataclass-wizard", specifier = ">=0.34.0" },
-    { name = "httpx", specifier = ">=0.28.1" },
-    { name = "jsonpath-ng", specifier = ">=1.7.0" },
-    { name = "oauthlib", specifier = ">=3.2.2" },
-    { name = "pre-commit", specifier = ">=4.1.0" },
-    { name = "types-oauthlib", specifier = ">=3.2.0.20240806" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "hatchling", specifier = ">=1.27.0" },
-    { name = "mypy", specifier = ">=1.14.1" },
-    { name = "pytest", specifier = ">=8.3.4" },
-    { name = "pytest-asyncio", specifier = ">=0.25.3" },
-    { name = "pytest-cov", specifier = ">=6.0.0" },
-    { name = "pytest-httpx", specifier = ">=0.35.0" },
-    { name = "ruff", specifier = ">=0.9.4" },
+sdist = { url = "https://files.pythonhosted.org/packages/2f/63/c530d915fb7fb96527f90ec84d85eabee8b109352a60947b733db7fa9514/clientforge-0.7.0.tar.gz", hash = "sha256:d53a0827da8603acce0be0b98d8b4024aaef9b19854f858879e5422932701e32", size = 46093 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/94/93/d4640d718ea8b9c38931fb2a96014628c10182cddb0bc42f6686ac32b9a0/clientforge-0.7.0-py3-none-any.whl", hash = "sha256:20ae56e8e4d76771072ed577c153521ca944f1735de4c876d32c882cc3eb7ab5", size = 23342 },
 ]
 
 [[package]]
@@ -308,7 +291,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "clientforge", directory = "../clientforge" },
+    { name = "clientforge", specifier = ">=0.7.0" },
     { name = "dataclass-wizard", specifier = "==0.35.0" },
     { name = "pre-commit", specifier = ">=4.1.0" },
     { name = "requests", specifier = ">=2.32.3" },
